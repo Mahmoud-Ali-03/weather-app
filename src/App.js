@@ -1,23 +1,205 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+// Axios
+import axios from "axios";
+// MomoentJS
+import moment from "moment/moment";
+import "moment/min/locales";
+//this is Materal UI moduels
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import WbCloudyIcon from "@mui/icons-material/WbCloudy";
+import Button from "@mui/material/Button";
+// React Hoks
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+const Theme = createTheme({
+  typography: {
+    fontFamily: ["Baloo-reg"],
+  },
+});
 
 function App() {
+  const [curentlang, setCurentlang] = useState("ar");
+  const theday = moment().format("dddd");
+  const thedate = moment().format("l");
+  const directions = curentlang == "ar" ? "rtl" : "ltr";
+  console.log("the time is " + theday + thedate);
+  const [showdayanddate, setShowdayanddate] = useState({ day: "", date: "" });
+  const { t, i18n } = useTranslation();
+  const [temp, setTemp] = useState({
+    number: null,
+    description: "",
+    maxNum: null,
+    minNum: null,
+    icon: null,
+  });
+  let cancel = null;
+  const handelchangelang = () => {
+    if (curentlang == "ar") {
+      moment.locale("ar");
+      setCurentlang("en");
+      i18n.changeLanguage("en");
+    } else if (curentlang == "en") {
+      moment.locale("en");
+      setCurentlang("ar");
+      i18n.changeLanguage("ar");
+    }
+    setShowdayanddate({ day: theday, date: thedate });
+  };
+  useEffect(() => {
+    setShowdayanddate({ day: theday, date: thedate });
+    axios
+      .get(
+        "https://api.openweathermap.org/data/2.5/weather?lat=31.205753&lon=29.924526&appid=932741cad31452bd052fd298ecacdbc8",
+        {
+          cancelToken: new axios.CancelToken((e) => {
+            cancel = e;
+          }),
+        }
+      )
+      .then(function (response) {
+        // handle success
+        const theTemp = Math.round(response.data.main.temp - 273.15);
+        const thedesic = response.data.weather[0].description;
+        const theMaxnum = Math.round(response.data.main.temp_max - 273.15);
+        const theMinnum = Math.round(response.data.main.temp_min - 273.15);
+        const theIcon = `https://openweathermap.org/img/wn/${response.data.weather[0].icon}@2x.png`;
+        console.log(response.data);
+        setTemp({
+          number: theTemp,
+          description: thedesic,
+          maxNum: theMaxnum,
+          minNum: theMinnum,
+          icon: theIcon,
+        });
+      })
+      .catch(function (error) {
+        // handle error
+        console.log(error);
+      });
+    return () => {
+      cancel();
+    };
+  }, []);
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+      <ThemeProvider theme={Theme}>
+        <Container
+          maxWidth="sm"
+          style={{
+            display: "flex",
+            height: "100vh",
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "column",
+          }}
         >
-          Learn React
-        </a>
-      </header>
+          {/* Div of head */}
+          <div
+            style={{
+              background: "#10439F",
+              padding: "10px",
+              borderRadius: "10px",
+              boxShadow: "rgba(0, 0, 0, 0.45) 0px 25px 20px -20px",
+            }}
+          >
+            {/* City and Date */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "end",
+                justifyContent: "end",
+                color: "#fff",
+              }}
+              dir={directions}
+            >
+              <Typography variant="h2" style={{ marginRight: "25px" }}>
+                {t("alexandria")}
+              </Typography>
+              <Typography variant="h4" style={{ marginRight: "25px" }}>
+                <span
+                  style={{
+                    paddingLeft: curentlang == "ar" ? "10px" : "0px",
+                    paddingRight: curentlang == "en" ? "10px" : "0px",
+                  }}
+                >
+                  {showdayanddate.day}
+                </span>
+                {showdayanddate.date}
+              </Typography>
+            </div>
+            {/* End City and Date */}
+            <hr />
+            {/* Degre and Description */}
+            <div
+              style={{ display: "flex", justifyContent: "space-around" }}
+              dir={directions}
+            >
+              {/* right section */}
+              <div style={{ textAlign: curentlang == "ar" ? "right" : "left" }}>
+                {/* temper  */}
+                <div style={{ display: "flex", alignItems: "flex-start" }}>
+                  <Typography variant="h2" style={{ fontSize: "100px" }}>
+                    {temp.number}
+                  </Typography>
+                  <img src={temp.icon} style={{ objectFit: "cover" }} />
+                </div>
+                {/* End temper  */}
+                <p style={{ marginTop: "0px", marginBottom: "10px" }}>
+                  {t(temp.description)}
+                </p>
+                {/*  temp big and smal */}
+                <div style={{ display: "flex" }}>
+                  <Typography
+                    variant="h6"
+                    style={{
+                      marginLeft: curentlang == "ar" ? "10px" : "0px",
+                      marginRight: curentlang == "en" ? "10px" : "0px",
+                      fontSize: "18px",
+                    }}
+                  >
+                    {t("Max :")} <span>{temp.maxNum}</span>
+                  </Typography>
+                  |
+                  <Typography
+                    variant="h6"
+                    style={{
+                      marginRight: curentlang == "ar" ? "10px" : "0px",
+                      marginLeft: curentlang == "en" ? "10px" : "0px",
+                      fontSize: "18px",
+                    }}
+                  >
+                    {t("Min :")} <span>{temp.minNum}</span>
+                  </Typography>
+                </div>
+                {/*====temp big and smal====*/}
+              </div>
+              {/*===== right section =====*/}
+              {/* left section */}
+              <div>
+                <WbCloudyIcon style={{ fontSize: "200px", color: "white" }} />
+              </div>
+              {/* ===== left section ===== */}
+            </div>
+            {/* End Degre and Description */}
+          </div>
+          <Button
+            variant="text"
+            style={{
+              marginTop: "10px",
+              fontSize: "20px",
+              color: "#fff",
+              alignSelf: "flex-start",
+            }}
+            dir={directions}
+            onClick={handelchangelang}
+          >
+            {curentlang == "ar" ? "أنجليزي" : "عربي"}
+          </Button>
+          {/* End Div of head */}
+        </Container>
+      </ThemeProvider>
     </div>
   );
 }

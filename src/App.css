@@ -1,5 +1,28 @@
+/* Fonts */
+@font-face {
+  font-family: "Baloo-bold";
+  src: url("../public/fonts/baloo/BalooBhaijaan2-Bold.ttf");
+}
+@font-face {
+  font-family: "Baloo-exbold";
+  src: url("../public/fonts/baloo/BalooBhaijaan2-ExtraBold.ttf");
+}
+@font-face {
+  font-family: "Baloo-med";
+  src: url("../public/fonts/baloo/BalooBhaijaan2-Medium.ttf");
+}
+@font-face {
+  font-family: "Baloo-reg";
+  src: url("../public/fonts/baloo/BalooBhaijaan2-Regular.ttf");
+}
+@font-face {
+  font-family: "Baloo-sembold";
+  src: url("../public/fonts/baloo/BalooBhaijaan2-SemiBold.ttf");
+}
 .App {
   text-align: center;
+  background-color: #03AED2;
+  color: #fff;
 }
 
 .App-logo {
