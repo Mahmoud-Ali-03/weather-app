@@ -1,6 +1,5 @@
 import "./App.css";
-// Axios
-import axios from "axios";
+
 // MomoentJS
 import moment from "moment/moment";
 import "moment/min/locales";
@@ -10,9 +9,13 @@ import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import WbCloudyIcon from "@mui/icons-material/WbCloudy";
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 // React Hoks
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+// redax
+import { useDispatch, useSelector } from "react-redux";
+import { fetchwatherdata } from "./storeSlice";
 const Theme = createTheme({
   typography: {
     fontFamily: ["Baloo-reg"],
@@ -20,21 +23,19 @@ const Theme = createTheme({
 });
 
 function App() {
+  const runisloader = useSelector((state) => {
+    return state.weather.isloder;
+  });
+  const temp = useSelector((state) => {
+    return state.weather.weather;
+  });
+  const dispatch = useDispatch();
   const [curentlang, setCurentlang] = useState("ar");
   const theday = moment().format("dddd");
   const thedate = moment().format("l");
   const directions = curentlang == "ar" ? "rtl" : "ltr";
-  console.log("the time is " + theday + thedate);
   const [showdayanddate, setShowdayanddate] = useState({ day: "", date: "" });
   const { t, i18n } = useTranslation();
-  const [temp, setTemp] = useState({
-    number: null,
-    description: "",
-    maxNum: null,
-    minNum: null,
-    icon: null,
-  });
-  let cancel = null;
   const handelchangelang = () => {
     if (curentlang == "ar") {
       moment.locale("ar");
@@ -48,39 +49,8 @@ function App() {
     setShowdayanddate({ day: theday, date: thedate });
   };
   useEffect(() => {
+    dispatch(fetchwatherdata());
     setShowdayanddate({ day: theday, date: thedate });
-    axios
-      .get(
-        "https://api.openweathermap.org/data/2.5/weather?lat=31.205753&lon=29.924526&appid=932741cad31452bd052fd298ecacdbc8",
-        {
-          cancelToken: new axios.CancelToken((e) => {
-            cancel = e;
-          }),
-        }
-      )
-      .then(function (response) {
-        // handle success
-        const theTemp = Math.round(response.data.main.temp - 273.15);
-        const thedesic = response.data.weather[0].description;
-        const theMaxnum = Math.round(response.data.main.temp_max - 273.15);
-        const theMinnum = Math.round(response.data.main.temp_min - 273.15);
-        const theIcon = `https://openweathermap.org/img/wn/${response.data.weather[0].icon}@2x.png`;
-        console.log(response.data);
-        setTemp({
-          number: theTemp,
-          description: thedesic,
-          maxNum: theMaxnum,
-          minNum: theMinnum,
-          icon: theIcon,
-        });
-      })
-      .catch(function (error) {
-        // handle error
-        console.log(error);
-      });
-    return () => {
-      cancel();
-    };
   }, []);
   return (
     <div className="App">
@@ -140,6 +110,13 @@ function App() {
               <div style={{ textAlign: curentlang == "ar" ? "right" : "left" }}>
                 {/* temper  */}
                 <div style={{ display: "flex", alignItems: "flex-start" }}>
+                  {runisloader ? (
+                    <CircularProgress
+                      style={{ color: "#fff", marginTop: "40px" }}
+                    />
+                  ) : (
+                    ""
+                  )}
                   <Typography variant="h2" style={{ fontSize: "100px" }}>
                     {temp.number}
                   </Typography>
